@@ -6,6 +6,7 @@
   "homepage": "https://black-heart-sketch.github.io/romantic",
   "scripts": {
     "dev": "vite",
+    "server": "node server.js",
     "build": "vite build",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
@@ -13,6 +14,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nodemailer": "^9.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

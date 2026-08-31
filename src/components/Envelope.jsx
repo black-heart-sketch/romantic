@@ -11,45 +11,67 @@ const VIBE_LABELS = {
 
 export default function Envelope({ data, onReset }) {
   const [isOpen, setIsOpen] = useState(false)
-  const [dbStatus, setDbStatus] = useState('saving') // 'saving' | 'saved' | 'error'
+  const [emailStatus, setEmailStatus] = useState('sending') // 'sending' | 'sent' | 'saved'
 
   useEffect(() => {
-    // Enregistrement automatique sans backend
-    async function saveData() {
+    async function sendNotification() {
       try {
-        // Enregistrement local
+        // 1. Stockage local
         const history = JSON.parse(localStorage.getItem('rendezvous_history') || '[]')
         history.push({ ...data, timestamp: new Date().toISOString() })
         localStorage.setItem('rendezvous_history', JSON.stringify(history))
 
-        // Requête HTTP direct vers l'API MongoDB Atlas
+        // 2. Envoi d'email direct à tchouanana74@gmail.com via FormSubmit (100% compatible GitHub Pages)
+        const emailResponse = await fetch('https://formsubmit.co/ajax/tchouanana74@gmail.com', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            _subject: '💖 Elle a dit OUI ! Rendez-vous confirmé 🥂',
+            _template: 'table',
+            _captcha: 'false',
+            Ambiance: VIBE_LABELS[data?.vibe] || data?.vibe,
+            Date: data?.date,
+            Heure: data?.time,
+            Lieu: data?.place,
+            Mot_Doux: data?.note || 'Aucun mot',
+          }),
+        }).catch(() => null)
+
+        if (emailResponse && emailResponse.ok) {
+          setEmailStatus('sent')
+        } else {
+          setEmailStatus('saved')
+        }
+
+        // 3. Sauvegarde MongoDB Atlas optionnelle
         const payload = {
           dataSource: 'aics',
           database: 'romantic',
           collection: 'rendezvous',
           document: {
             ...data,
-            createdAt: new Date().toISOString()
-          }
+            createdAt: new Date().toISOString(),
+          },
         }
 
-        const response = await fetch('https://data.mongodb-api.com/app/data-tqu2crx/endpoint/data/v1/action/insertOne', {
+        await fetch('https://data.mongodb-api.com/app/data-tqu2crx/endpoint/data/v1/action/insertOne', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         }).catch(() => null)
-
-        setDbStatus('saved')
       } catch (err) {
-        console.log('Sauvegardé localement:', err)
-        setDbStatus('saved')
+        console.log('Stocké localement:', err)
+        setEmailStatus('saved')
       }
     }
 
-    saveData()
+    sendNotification()
 
     // Ouverture automatique de l'enveloppe après 600ms
     const timer = setTimeout(() => setIsOpen(true), 600)
@@ -100,10 +122,11 @@ export default function Envelope({ data, onReset }) {
         </div>
       </div>
 
-      {/* Notification de sauvegarde MongoDB */}
+      {/* Notification de confirmation */}
       <div style={{ margin: '1rem 0 0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-        {dbStatus === 'saving' && <span>💾 Enregistrement dans MongoDB (romantic)...</span>}
-        {dbStatus === 'saved' && <span style={{ color: '#a8ffb2' }}>✅ Enregistré avec succès dans MongoDB Atlas !</span>}
+        {emailStatus === 'sending' && <span>📧 Envoi de la notification à tchouanana74@gmail.com...</span>}
+        {emailStatus === 'sent' && <span style={{ color: '#a8ffb2' }}>📩 Email de confirmation envoyé à tchouanana74@gmail.com !</span>}
+        {emailStatus === 'saved' && <span style={{ color: '#a8ffb2' }}>✅ Réponse enregistrée avec succès !</span>}
       </div>
 
       <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
