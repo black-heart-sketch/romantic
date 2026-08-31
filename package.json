@@ -1,18 +1,18 @@
 {
-  "name": "surprise",
+  "name": "romantic",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://black-heart-sketch.github.io/romantic",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "mongoose": "^9.9.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -20,6 +20,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
+    "gh-pages": "^6.3.0",
     "oxlint": "^1.79.0",
     "vite": "^8.2.2"
   }
